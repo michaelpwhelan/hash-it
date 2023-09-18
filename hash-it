@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+import hashlib
+import os
+import sys
+import argparse
+import shutil
+
+
+def listdir_nohidden(path):
+    for f in os.listdir(path):
+        if not f.startswith('.'):
+            yield f
+
+def hash_it(algorithm, options, string):
+
+    if "-d" in options:
+        directory_path = string
+        if not os.path.isdir(directory_path):
+            print("Invalid directory path.")
+            return
+
+        if "-r" in options:
+            for root, dirs, files in os.walk(directory_path):
+                if "-h" in options:
+                    files = listdir_nohidden(root)
+                for file_name in files:
+                    file_path = os.path.join(root, file_name)
+                    with open(file_path, "rb") as file:
+                        hash_object = hashlib.new(algorithm)
+                        while True:
+                            chunk = file.read(4096)
+                            if not chunk:
+                                break
+                            hash_object.update(chunk)
+                        hashed_output = hash_object.hexdigest()
+
+                    if "-s" in options:
+                        hashed_output = hashed_output[:10]
+
+                    print(f"{file_path}: {hashed_output}")
+        else:
+            if "-h" in options:
+                files = listdir_nohidden(directory_path)
+            else:
+                files = os.listdir(directory_path)
+            for file_name in files:
+                file_path = os.path.join(directory_path, file_name)
+                if os.path.isfile(file_path):
+                    with open(file_path, "rb") as file:
+                        hash_object = hashlib.new(algorithm)
+                        while True:
+                            chunk = file.read(4096)
+                            if not chunk:
+                                break
+                            hash_object.update(chunk)
+                        hashed_output = hash_object.hexdigest()
+
+                    if "-s" in options:
+                        hashed_output = hashed_output[:10]
+
+                    print(f"{file_path}: {hashed_output}")
+
+    else:
+        hash_object = hashlib.new(algorithm)
+        if "-f" in options:
+            file_path = string
+            try:
+                with open(file_path, "rb") as file:
+                    while True:
+                        chunk = file.read(4096)
+                        if not chunk:
+                            break
+                        hash_object.update(chunk)
+            except FileNotFoundError:
+                print("File not found.")
+                return
+        else:
+            print("Submitted string: " + string)
+            hash_object.update(string.encode())
+
+        hashed_output = hash_object.hexdigest()
+
+        if "-s" in options:
+            hashed_output = hashed_output[:10]
+
+        print(hashed_output)
+
+if __name__ == "__main__":
+    algorithm = sys.argv[1]
+    options = sys.argv[2:-1]
+    string = sys.argv[-1]
+
+    hash_it(algorithm, options, string)
+
