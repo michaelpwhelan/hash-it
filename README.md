@@ -4,7 +4,8 @@ Open source command line tool for hashing files, directories, and strings. I've 
 
 ## Installation
 Download the `hash-it` file and run the following commands:
-mv ~/Downloads/hash-it /usr/local/bin
+* mv ~/Downloads/hash-it /usr/local/bin
+* chmod +x hash-it
 
 
 ## Usage
